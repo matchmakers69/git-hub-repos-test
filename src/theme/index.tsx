@@ -17,7 +17,6 @@ export const theme: DefaultTheme = {
   },
   fontFamily: {
     primary: "Poppins",
-    secondary: "Roboto Slab",
   },
   weight: {
     thin: 300,
