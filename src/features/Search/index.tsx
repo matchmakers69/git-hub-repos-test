@@ -11,6 +11,7 @@ const Search = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [loading, setLoading] = useState(false);
+  const[reposAlert, setRepoAlert] = useState("");
   const [reposData, setReposData] = useState<IRepo | null>(null);
 
   const fetchReposData = useCallback(
@@ -24,7 +25,11 @@ const Search = () => {
       const searchParams = `${queryTerm}${queryPerPage}${queryPageNumber}`;
       try {
         const responseData = await fetchReposBySearchQueries(searchParams);
-
+        if(!responseData.items.length){
+          setRepoAlert("Sorry there are no repos")
+        }else {
+          setRepoAlert("")
+        }
         setLoading(false);
         setReposData(responseData);
       } catch (error) {
@@ -37,11 +42,13 @@ const Search = () => {
   useEffect(() => {
     if (!reposData) return;
     fetchReposData(searchQuery);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageNumber, fetchReposData, searchQuery]);
 
   const handleSearchSubmit = (term: string) => {
     setSearchQuery(term);
     fetchReposData(term);
+  
   };
 
   const handleGoToNextPrevPagination = (direction: string) => {
@@ -69,29 +76,30 @@ const Search = () => {
             initialTerm={searchQuery}
             onSubmit={handleSearchSubmit}
           />
+          <div>
+            {reposAlert}
+          </div>
           {reposData && (
             <>
               <ReposList repos={reposData?.items} />
+              <S.PaginationWrapper>
+                <S.PaginationBtn
+                  disabled={pageNumber <= 1}
+                  onClick={() => handleGoToNextPrevPagination("prev")}
+                >
+                  ❮
+                </S.PaginationBtn>
+                <S.TotalPagesWrapper>
+                  <S.PageNumberLabel>Page</S.PageNumberLabel>
+                  <S.PageNumber>{pageNumber}</S.PageNumber>
+                </S.TotalPagesWrapper>
+                <S.PaginationBtn
+                  onClick={() => handleGoToNextPrevPagination("next")}
+                >
+                  ❯
+                </S.PaginationBtn>
+              </S.PaginationWrapper>
             </>
-          )}
-          {reposData && (
-            <S.PaginationWrapper>
-              <S.PaginationBtn
-                disabled={pageNumber <= 1}
-                onClick={() => handleGoToNextPrevPagination("prev")}
-              >
-                ❮
-              </S.PaginationBtn>
-              <S.TotalPagesWrapper>
-                <S.PageNumberLabel>Page</S.PageNumberLabel>
-                <S.PageNumber>{pageNumber}</S.PageNumber>
-              </S.TotalPagesWrapper>
-              <S.PaginationBtn
-                onClick={() => handleGoToNextPrevPagination("next")}
-              >
-                ❯
-              </S.PaginationBtn>
-            </S.PaginationWrapper>
           )}
         </S.OuterList>
       </S.ReposResultWrapper>
